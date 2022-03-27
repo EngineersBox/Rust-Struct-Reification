@@ -45,38 +45,37 @@ macro_rules! reify{
                 return core::convert::From::from([
                     $((
                         stringify!($field_name).to_string(),
-                        stringify!($($field_attribute)?).to_string().replace(" ", "")
+                        stringify!($($field_attribute)?).to_string()
                     ),)*
                 ]);
             }
-            pub fn get_field_attribute(field_name_prm: &str) -> Result<String, StructFieldNotFoundError> {
-                let fields: Vec<String> = vec![$(stringify!($field_name,$($field_attribute)?).replace(" ", "")),*];
-                let mut field_attr: String = "@@FNF@@".to_string();
-                fields.iter().for_each(|field_str| {
-                    let parts : Vec<&str> = field_str.split(",").collect();
-                    if parts.len() == 2 && parts[0] == field_name_prm{
-                        field_attr = parts[1].to_string();
-                    }
-                });
-                if field_attr.as_str() == "@@FNF@@" {
-                    return Err(StructFieldNotFoundError{
+            pub fn get_field_attribute(field_name_prm: &str) -> Result<Option<String>, StructFieldNotFoundError> {
+                return match field_name_prm {
+                    $(stringify!($field_name) => {
+                        let attr_value: String = stringify!($($field_attribute)?).to_string();
+                        return Ok(if attr_value.is_empty() { None } else { Some(attr_value) });
+                    },)*
+                    _ => Err(StructFieldNotFoundError{
                         struct_name: stringify!($name).to_string(),
                         field_name: field_name_prm.to_string(),
-                    })
-                }
-                return Ok(field_attr);
+                    }),
+                };
             }
-            pub fn get_field_attribute_typed<T: std::str::FromStr>(field_name_prm: &str) -> Result<T, TypedAttributeRetrievalError> {
-                let attr: String = match $name::get_field_attribute(field_name_prm) {
+            pub fn get_field_attribute_typed<T: std::str::FromStr>(field_name_prm: &str) -> Result<Option<T>, TypedAttributeRetrievalError> {
+                let attr: Option<String> = match $name::get_field_attribute(field_name_prm) {
                     Ok(v) => v,
                     Err(e) => return Err(TypedAttributeRetrievalError{
                         message: e.field_name,
                     }),
                 };
-                return match attr.parse::<T>() {
-                    Ok(v) => Ok(v),
+                if attr.is_none() {
+                    return Ok(None);
+                }
+                let attr_value: String = attr.unwrap();
+                return match attr_value.parse::<T>() {
+                    Ok(v) => Ok(Some(v)),
                     Err(e) => Err(TypedAttributeRetrievalError{
-                        message: attr.to_string(),
+                        message: attr_value,
                     }),
                 }
             }
@@ -103,5 +102,3 @@ macro_rules! reify{
                 }
             }
         }
-    }
-}

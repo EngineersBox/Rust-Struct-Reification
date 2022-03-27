@@ -30,10 +30,12 @@ fn main() {
     println!("{:?}", TestStruct::get_field_attribute_map());
     // Prints: { "field1": "some_attr=5", "field2": "macro_attr(Value)", "field3": "" }
     println!("{:?}", TestStruct::get_field_attribute("field1"));
-    // Prints: Ok("some_attr=5")
+    // Prints: Ok(Some("some_attr=5"))
     println!("{:?}", TestStruct::get_field_attribute("field3"));
+    // Prints: Ok(None)
+    println!("{:?}", TestStruct::get_field_attribute("field4"));
     // Prints: Err(TypedAttributeRetrievalError{ message: "..." })
-    
+
     let test_struct: TestStruct = TestStruct::new();
     println!("{:?}", test_struct::get_field("field1"));
     // Prints: Ok(Any { .. })
