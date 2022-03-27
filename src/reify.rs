@@ -41,6 +41,7 @@ macro_rules! reify{
             $($field_vis_spec $field_name: $field_type,)*
         }
         impl $name {
+            #[allow(dead_code)]
             pub fn get_field_attribute_map() -> std::collections::HashMap<String, String> {
                 return core::convert::From::from([
                     $((
@@ -49,6 +50,7 @@ macro_rules! reify{
                     ),)*
                 ]);
             }
+            #[allow(dead_code)]
             pub fn get_field_attribute(field_name_prm: &str) -> Result<Option<String>, StructFieldNotFoundError> {
                 return match field_name_prm {
                     $(stringify!($field_name) => {
@@ -61,6 +63,7 @@ macro_rules! reify{
                     }),
                 };
             }
+            #[allow(dead_code)]
             pub fn get_field_attribute_typed<T: std::str::FromStr>(field_name_prm: &str) -> Result<Option<T>, TypedAttributeRetrievalError> {
                 let attr: Option<String> = match $name::get_field_attribute(field_name_prm) {
                     Ok(v) => v,
@@ -74,11 +77,12 @@ macro_rules! reify{
                 let attr_value: String = attr.unwrap();
                 return match attr_value.parse::<T>() {
                     Ok(v) => Ok(Some(v)),
-                    Err(e) => Err(TypedAttributeRetrievalError{
+                    Err(_) => Err(TypedAttributeRetrievalError{
                         message: attr_value,
                     }),
                 }
             }
+            #[allow(dead_code)]
             pub fn get_field(&self, field_name_prm: &str) -> Result<Box<&dyn std::any::Any>, StructFieldNotFoundError> {
                 return match field_name_prm {
                     $(stringify!($field_name) => Ok(Box::new(&self.$field_name)),)*
@@ -88,6 +92,7 @@ macro_rules! reify{
                     }),
                 }
             }
+            #[allow(dead_code)]
             pub fn get_field_typed<T: 'static>(&self, field_name_prm: &str) -> Result<Box<&T>, StructFieldNotFoundError> {
                 let boxed_field_value: Box<&dyn std::any::Any> = match self.get_field(field_name_prm) {
                     Ok(v) => v,
